@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mon Lecteur</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- évite le 404 favicon -->
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <div class="bg"></div>
+
+    <header class="appbar">
+      <div class="brand">
+        <span class="logo">🎵</span>
+        <h1>Mon Lecteur</h1>
+      </div>
+    </header>
+
+    <main class="shell">
+      <!-- Lecteur principal -->
+      <section class="player glass">
+        <div class="hero">
+          <div class="cover" id="cover" aria-hidden="true">♪</div>
+          <div class="now">
+            <div class="title" id="now">—</div>
+            <div class="muted" id="artist">—</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="row center">
+            <button
+              id="shuffle"
+              class="icon tog"
+              aria-pressed="false"
+              title="Aléatoire"
+            >
+              🔀
+            </button>
+            <button id="prev" class="icon" title="Précédent">⏮︎</button>
+            <button id="play" class="play">▶️</button>
+            <button id="next" class="icon" title="Suivant">⏭︎</button>
+            <button
+              id="repeat"
+              class="icon tog"
+              aria-pressed="false"
+              title="Répéter"
+            >
+              🔁
+            </button>
+          </div>
+
+          <div class="progress">
+            <input id="seek" type="range" min="0" max="100" value="0" />
+            <span id="clock" class="time">0:00 / —</span>
+          </div>
+
+          <div class="row">
+            <label class="vol">
+              <span>🔊</span>
+              <input
+                id="vol"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value="1"
+              />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Colonne de droite -->
+      <section class="right">
+        <!-- 🔎 Recherche locale -->
+        <div class="glass filter">
+          <form id="filterForm" class="filter-bar" autocomplete="off">
+            <input
+              id="filterInput"
+              type="text"
+              placeholder="Rechercher dans la playlist…"
+            />
+            <button id="filterClear" type="button" title="Effacer">✕</button>
+          </form>
+          <div id="filterInfo" class="muted"></div>
+        </div>
+
+        <!-- 🔥 Spotify -->
+        <div class="glass spotify">
+          <h3>Spotify</h3>
+          <p class="muted">Compte <strong>Spotify Premium</strong> requis.</p>
+          <p><button id="spotifyLogin">Se connecter avec Spotify</button></p>
+
+          <div class="row">
+            <input
+              id="spotifyInput"
+              type="text"
+              placeholder="Lien ou URI Spotify (track / album / playlist)"
+            />
+            <button id="spotifyPlay">▶️ Lire</button>
+          </div>
+
+          <p id="spotifyStatus" class="muted">Non connecté.</p>
+        </div>
+
+        <!-- Playlist -->
+        <div class="playlist glass" id="list" aria-label="Playlist"></div>
+      </section>
+    </main>
+
+    <footer class="foot muted">Astuce : barre d’espace = lecture/pause</footer>
+
+    <!-- ====== SCRIPTS ====== -->
+    <!-- Ton lecteur local -->
+    <script src="./script.js"></script>
+
+    <!-- SDK Spotify -->
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+
+    <!-- Intégration Spotify (Web Playback SDK) -->
+    <script src="./spotify.js"></script>
+
+    <!-- Bouton login: redirige vers ton backend (port 4000) -->
+    <script>
+      const BACKEND_URL = "http://127.0.0.1:4000"; // backend Express
+
+      document.getElementById("spotifyLogin")?.addEventListener("click", () => {
+        // Si ton backend expose GET /login -> redirection serveur vers Spotify,
+        // sinon remplace par /login-url qui renvoie {url} et fais location.href = url.
+        window.location.href = `${BACKEND_URL}/login`;
+      });
+    </script>
+  </body>
+</html>
+
+<!-- SDK Spotify (ok) -->
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+
+<!-- Ton JS Spotify côté front (doit pointer sur /web/spotify.js) -->
+<script src="./spotify.js"></script>

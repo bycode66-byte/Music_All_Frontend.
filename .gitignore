@@ -1,0 +1,7 @@
+# système
+.DS_Store
+Thumbs.db
+
+# si un jour tu ajoutes un build tool
+node_modules/
+dist/
