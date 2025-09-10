@@ -284,3 +284,71 @@ loadState();
 renderList();
 load(index);
 setAdmin(false); // public par défaut
+// ===== Anti-boucle / anti-rafale =====
+window.__player = window.__player || {};
+const P = window.__player;
+
+P.advanceLock = false;
+P.lastAdvance = 0;
+P.minAdvanceGapMs = 500; // anti-rafale
+
+function safeNext() {
+  const now = Date.now();
+  if (P.advanceLock) return;
+  if (now - P.lastAdvance < P.minAdvanceGapMs) return;
+  P.advanceLock = true;
+  try {
+    if (typeof next === 'function') { next(); }       // ta fonction existante
+    else if (typeof nextTrack === 'function') { nextTrack(); }
+    P.lastAdvance = now;
+  } finally {
+    setTimeout(() => { P.advanceLock = false; }, 550);
+  }
+}
+
+// Assure un SEUL jeu de handlers sur l'élément audio
+function wireAudio() {
+  if (P.wired) return;
+  P.wired = true;
+
+  // récupère / crée l'élément audio unique
+  let a = document.querySelector('audio#audio') || document.querySelector('audio');
+  if (!a) {
+    a = document.createElement('audio');
+    a.id = 'audio';
+    a.crossOrigin = 'anonymous';
+    document.body.appendChild(a);
+  }
+  window._audio = a; // expose si besoin ailleurs
+
+  // remplace d'éventuels addEventListener multiples par des assignations uniques
+  a.onended = () => safeNext();
+  a.onerror = () => safeNext();
+
+  // si tu utilises un interval de progression, nettoie avant d'en créer un autre
+  if (P.progressTimer) { clearInterval(P.progressTimer); }
+  P.progressTimer = setInterval(() => {
+    // … update UI si besoin …
+  }, 500);
+}
+
+// Appelle wireAudio une seule fois au chargement
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', wireAudio, { once: true });
+} else {
+  wireAudio();
+}
+
+// ===== Harden load() : démonte puis remonte proprement =====
+const __origLoad = (typeof load === 'function') ? load : null;
+if (__origLoad) {
+  window.load = function(idx) {
+    // avant de recharger une piste, s'assurer qu'on ne laisse pas d'intervals fantômes
+    if (P.progressTimer) { clearInterval(P.progressTimer); P.progressTimer = null; }
+    P.wired = false; // forcera wireAudio à ré-attacher proprement
+    const res = __origLoad.apply(this, arguments);
+    // re-wire après load (handlers uniques)
+    setTimeout(wireAudio, 0);
+    return res;
+  };
+}
