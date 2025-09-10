@@ -352,3 +352,14 @@ if (__origLoad) {
     return res;
   };
 }
+if (!window.__player) { window.__player = {}; }
+if (!window.__player.goNext) {
+  window.__player.goNext = (fn) => {
+    if (!window.__player._nLock) {
+      window.__player._nLock = true;
+      try { fn && fn(); } finally {
+        setTimeout(() => window.__player._nLock = false, 600);
+      }
+    }
+  };
+}
