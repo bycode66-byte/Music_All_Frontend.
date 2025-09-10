@@ -3,9 +3,9 @@ const ADMIN_PIN = "1234"; // PIN secret (Alt+Maj+A pour activer, Alt+Maj+X pour 
 
 /** PLAYLIST PRÉREMPLIE (fichiers hébergés dans /audio) **/
 let TRACKS = [
-  { title: "Intro", artist: "Moi", src: "../audio/intro.mp3" },
-  { title: "Beat 1", artist: "Moi", src: "../audio/beat1.mp3" },
-  { title: "Outro", artist: "Moi", src: "../audio/outro.mp3" },
+  { title: "Intro", artist: "Moi", src: "../audio/intro.wav" },
+  { title: "Beat 1", artist: "Moi", src: "../audio/beat1.wav" },
+  { title: "Outro", artist: "Moi", src: "../audio/outro.wav" },
 ];
 
 /** ÉTAT **/
@@ -91,8 +91,22 @@ function load(i) {
 }
 async function play() {
   try {
-    await audio.play();
-    btnPlay.textContent = "⏸︎";
+    try {
+  await audio.play();
+} catch (e) {
+  console.warn('Autoplay bloqué:', e);
+  let btn = document.getElementById('unlockAudio');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'unlockAudio';
+    btn.textContent = 'Activer le son';
+    btn.style = 'position:fixed;inset:0;margin:auto;padding:12px 18px;z-index:9999';
+    document.body.appendChild(btn);
+  }
+  btn.onclick = async () => {
+    try { await audio.play(); btn.remove(); } catch (e2) { console.error(e2); }
+  };
+}btnPlay.textContent = "⏸︎";
   } catch (err) {
     console.warn("Play bloqué par le navigateur :", err);
     btnPlay.textContent = "▶️";
@@ -431,3 +445,5 @@ if (__origLoad) {
     return res;
   };
 }
+
+
